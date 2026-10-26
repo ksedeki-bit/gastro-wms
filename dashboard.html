@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gastro WMS - Panel Menedżera</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f5f9; color: #0f172a; padding: 20px; }
+        
+        header { background: #0f172a; color: white; padding: 20px 30px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .logo h1 { font-size: 22px; font-weight: 700; }
+        .logo p { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+        .status-badge { background: #22c55e; color: white; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+
+        nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .nav-btn { background: white; border: 1px solid #cbd5e1; padding: 12px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; color: #475569; font-size: 14px; }
+        .nav-btn:hover, .nav-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .card { background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card h2 { font-size: 18px; margin-bottom: 15px; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        th { background: #f8fafc; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 12px; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+        
+        .btn { background: #2563eb; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .btn:hover { background: #1d4ed8; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-warning { background: #d97706; }
+        .btn-warning:hover { background: #b45309; }
+        .btn-ksef { background: #7c3aed; }
+        .btn-ksef:hover { background: #6d28d9; }
+
+        .filter-container { display: flex; gap: 4px; flex-wrap: nowrap; overflow-x: auto; margin-bottom: 15px; padding-bottom: 4px; }
+        .btn-filter { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 5px 9px; border-radius: 16px; cursor: pointer; font-weight: 600; font-size: 12px; white-space: nowrap; transition: 0.15s; }
+        .btn-filter.active { background: #0f172a; color: white; border-color: #0f172a; }
+
+        .badge-cat { padding: 4px 8px; border-radius: 10px; font-weight: 700; font-size: 11px; display: inline-block; white-space: nowrap; }
+        .cat-jedzenie { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .cat-opakowania { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .cat-chemia { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .cat-prad { background: #fae8ff; color: #86198f; border: 1px solid #f5d0fe; }
+        .cat-czynsz { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+
+        .badge-fc { padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+        .fc-green { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .fc-yellow { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
+        .fc-red { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+        .alert-box { background: #fef2f2; border: 1px solid #fecaca; border-left: 5px solid #ef4444; padding: 15px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .step-banner { background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: #1e40af; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 450px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+        .modal-header h3 { font-size: 18px; }
+        .modal-close { cursor: pointer; font-size: 20px; font-weight: bold; color: #64748b; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <h1>🍝 Gastro WMS - Panel Menedżera</h1>
+            <p>Pełny podział: Jedzenie, Opakowania, Chemia, Prąd, Czynsz | KSeF & POS</p>
+        </div>
+        <div class="status-badge" id="api-status">● Łączenie z API...</div>
+    </header>
+
+    <nav>
+        <button class="nav-btn active" onclick="switchTab('menu-tab', event)">🍕 Menu & Food Cost</button>
+        <button class="nav-btn" onclick="switchTab('surowce-tab', event)">📦 Magazyn & Koszty</button>
+        <button class="nav-btn" onclick="switchTab('receptury-tab', event)">📝 Receptury & Udział w FC</button>
+        <button class="nav-btn" onclick="switchTab('simulator-tab', event)">🧮 Symulator FC</button>
+        <button class="nav-btn" onclick="switchTab('ksef-tab', event)">🧾 KSeF & Autoryzacja</button>
+        <button class="nav-btn" onclick="switchTab('pos-tab', event)">🔌 Integracje POS & Delivery</button>
+    </nav>
+
+    <!-- ZAKŁADKA 1: MENU & FOOD COST -->
+    <div id="menu-tab" class="tab-content active">
+        <div class="grid-2">
+            <div class="card">
+                <h2>➕ Dodaj Nowe Danie do Menu</h2>
+                <form onsubmit="addMenuItem(event)">
+                    <div class="form-group">
+                        <label>Nazwa Dania</label>
+                        <input type="text" id="dish-name" placeholder="np. Shoyu Ramen" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cena Sprzedaży Brutto (zł)</label>
+                        <input type="number" id="dish-price" step="0.01" placeholder="42.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ID / Kod Integracji (POS / Delivery)</label>
+                        <input type="text" id="dish-pos-id" placeholder="np. POS-SHOYU-01">
+                    </div>
+                    <button type="submit" class="btn btn-success" style="width: 100%;">➕ Dodaj Danie</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📊 Zarządzanie Menu & Food Cost (🟢🟡🔴)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Danie</th>
+                            <th>Cena Brutto</th>
+                            <th>Koszt Netto</th>
+                            <th>FC %</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody id="foodcost-table">
+                        <tr><td colspan="5" style="text-align: center;">Ładowanie danych...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ZAKŁADKA 2: MAGAZYN & KOSZTY -->
+    <div id="surowce-tab" class="tab-content">
+        <div class="grid-2">
+            <div class="card">
+                <h2>➕ Dodaj Pozycję do Magazynu / Kosztów</h2>
+                <form onsubmit="addRawMaterial(event)">
+                    <div class="form-group">
+                        <label>Kategoria Pozycji</label>
+                        <select id="mat-category" style="font-weight: 700;">
+                            <option value="jedzenie">🥦 Jedzenie</option>
+                            <option value="opakowania">📦 Opakowania</option>
+                            <option value="chemia">🧼 Chemia</option>
+                            <option value="prad">⚡ Prąd</option>
+                            <option value="czynsz">🏢 Czynsz</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kod SKU / Symbol</label>
+                        <input type="text" id="mat-sku" placeholder="SUROW-001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nazwa Pozycji</label>
+                        <input type="text" id="mat-name" placeholder="np. Boczek / Czynsz za maj" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Jednostka Miary</label>
+                        <select id="mat-unit">
+                            <option value="g">Gram (g)</option>
+                            <option value="ml">Mililitr (ml)</option>
+                            <option value="szt">Sztuka (szt)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Cena Zakupu Netto za J.M. (zł)</label>
+                        <input type="number" id="mat-price" step="0.0001" placeholder="0.0350" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Uzysk Surowca % (Dla Jedzenia)</label>
+                        <input type="number" id="mat-yield" step="0.1" value="100.0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stan Magazynowy Początkowy</label>
+                        <input type="number" id="mat-stock" step="1" placeholder="3000" required>
+                    </div>
+                    <button type="submit" class="btn btn-success" style="width: 100%;">➕ Dodaj Pozycję</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📦 Lista Magazynowa i Kosztowa</h2>
+                
+                <div class="filter-container">
+                    <button class="btn-filter active" onclick="setCategoryFilter('all', event)">Wszystkie</button>
+                    <button class="btn-filter" onclick="setCategoryFilter('jedzenie', event)">🥦 Jedzenie</button>
+                    <button class="btn-filter" onclick="setCategoryFilter('opakowania', event)">📦 Opakowania</button>
+                    <button class="btn-filter" onclick="setCategoryFilter('chemia', event)">🧼 Chemia</button>
+                    <button class="btn-filter" onclick="setCategoryFilter('prad', event)">⚡ Prąd</button>
+                    <button class="btn-filter" onclick="setCategoryFilter('czynsz', event)">🏢 Czynsz</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kategoria</th>
+                            <th>SKU / Nazwa</th>
+                            <th>Cena Netto</th>
+                            <th>Uzysk</th>
+                            <th>Stan</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody id="materials-table">
+                        <tr><td colspan="6" style="text-align: center;">Ładowanie danych...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ZAKŁADKA 3: RECEPTURY & UDZIAŁ W FOOD COST -->
+    <div id="receptury-tab" class="tab-content">
+        <div class="card">
+            <h2>📝 Tworzenie / Edycja Receptury Dania (BOM)</h2>
+            <div class="form-group">
+                <label>Wybierz Danie z Menu do edycji receptury</label>
+                <select id="recipe-dish-select" onchange="loadRecipeForDish()">
+                    <option value="">-- Wybierz Danie --</option>
+                </select>
+            </div>
+
+            <div id="recipe-summary-box" style="display:none; background:#eff6ff; border:1px solid #bfdbfe; padding:12px 16px; border-radius:8px; margin-bottom:15px; font-size:14px; color:#1e40af;">
+                Łączny koszt wytworzenia netto dania: <strong id="total-dish-cost-val" style="font-size:16px;">0.00 zł</strong>
+            </div>
+
+            <h3 style="margin: 20px 0 10px 0; font-size: 15px;">Składniki i ich procentowy udział w Food Cost dania:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Surowiec</th>
+                        <th>Ilość</th>
+                        <th>Uzysk %</th>
+                        <th>Koszt Netto</th>
+                        <th>Udział w Food Cost (%)</th>
+                        <th>Akcja</th>
+                    </tr>
+                </thead>
+                <tbody id="recipe-ingredients-table">
+                    <tr><td colspan="6">Wybierz danie z listy powyżej.</td></tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 20px; background: #f8fafc; padding: 15px; border-radius: 8px;">
+                <h4 style="font-size: 14px; margin-bottom: 10px;">Dodaj Składnik do Receptury:</h4>
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+                    <select id="add-ingredient-mat"></select>
+                    <input type="number" id="add-ingredient-qty" placeholder="Ilość np. 150" step="1">
+                    <button type="button" class="btn btn-success" onclick="addIngredientToTable()">➕ Dodaj Składnik</button>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-success" style="margin-top: 20px; width: 100%; font-size: 15px;" onclick="saveRecipe()">💾 Zapisz Całą Recepturę</button>
+        </div>
+    </div>
+
+    <!-- ZAKŁADKA 4: SYMULATOR CENY Z ELASTYCZNYM FC -->
+    <div id="simulator-tab" class="tab-content">
+        <div class="card">
+            <h2>🧮 Symulator Sugerowanej Ceny w Kartach</h2>
+            
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                <label style="font-weight: 700; font-size: 15px; color: #1e3a8a; margin: 0; white-space: nowrap;">🎯 Ustaw Docelowy Food Cost (%):</label>
+                <input type="number" id="target-fc-input" value="25" min="1" max="100" step="0.5" style="width: 110px; font-weight: 800; font-size: 18px; text-align: center; color: #1e293b; border: 2px solid #3b82f6; border-radius: 8px;" oninput="renderSimulatorTable()">
+                <span style="color: #475569; font-size: 13px;">Zmień procent powyżej – ceny w tabeli poniżej przeliczą się natychmiastowo!</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Danie</th>
+                        <th>Koszt Netto Surowców</th>
+                        <th>Obecna Cena Brutto</th>
+                        <th>Obecny FC %</th>
+                        <th>Sugerowana Cena Brutto (Dla FC <span id="target-fc-label" style="color:#2563eb; font-weight:bold;">25</span>%)</th>
+                    </tr>
+                </thead>
+                <tbody id="simulator-table">
+                    <tr><td colspan="5">Brak wyliczeń.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ZAKŁADKA 5: KSEF AUTORYZACJA I FAKTURY -->
+    <div id="ksef-tab" class="tab-content">
+        <div class="card" style="border-top: 4px solid #7c3aed;">
+            <h2>🔑 Krok 1: Wpisz swój Token Autoryzacyjny KSeF</h2>
+            <div class="step-banner">
+                <strong>Gdzie znaleźć Token?</strong> Wygenerujesz go w Portalu KSeF Ministerstwa Finansów.
+            </div>
+            <form onsubmit="saveKsefConfig(event)">
+                <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>NIP Restauracji / Firmy</label>
+                        <input type="text" id="ksef-nip-config" placeholder="np. 5250005834" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Token Autoryzacyjny KSeF</label>
+                        <input type="password" id="ksef-token-config" placeholder="Wklej tutaj swój Token KSeF..." required>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: flex-end;">
+                        <button type="submit" class="btn btn-ksef" style="width: 100%;">💾 Zapisz Token KSeF</button>
+                    </div>
+                </div>
+            </form>
+            <div id="ksef-config-msg" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="card" style="background: #f8fafc;">
+            <h2>
+                📥 Krok 2: Pobierz e-Faktury Zakupowe z Automatyczną Kategoryzacją
+                <button class="btn btn-success" onclick="syncKsefAuto()">🔄 Pobierz Nowe Faktury z KSeF</button>
+            </h2>
+            <div id="ksef-sync-status" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="card">
+            <h2>🚨 Wykryte Alerty Cenowe z KSeF (Skok ceny surowca > 2%)</h2>
+            <div id="alerts-container">Brak aktywnych alertów.</div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Ostatnio Pobrane e-Faktury w KSeF</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Numer Faktury</th>
+                        <th>Dostawca NIP</th>
+                        <th>Kwota Brutto</th>
+                        <th>Status w Systemie</th>
+                    </tr>
+                </thead>
+                <tbody id="ksef-invoices-table">
+                    <tr><td colspan="4" style="color:#64748b; text-align:center;">Brak pobranych faktur. Kliknij "Pobierz Nowe Faktury z KSeF" powyżej!</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ZAKŁADKA 6: INTEGRACJE POS -->
+    <div id="pos-tab" class="tab-content">
+        <div class="card">
+            <h2>🔌 Integracje – GoPOS, Restaumatic, Uber Eats, Bolt Food, Glovo, Wolt</h2>
+            <div style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-top:15px;">
+                <h3 style="font-size:15px; margin-bottom:12px;">Symulacja Wpływającego Zamówienia:</h3>
+                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:10px;">
+                    <div>
+                        <label>Wybierz Danie</label>
+                        <select id="pos-dish-select"></select>
+                    </div>
+                    <div>
+                        <label>Ilość Sprzedana</label>
+                        <input type="number" id="pos-qty" value="1" min="1">
+                    </div>
+                    <div>
+                        <label>Platforma</label>
+                        <select id="pos-source">
+                            <option value="GoPOS">GoPOS</option>
+                            <option value="Restaumatic">Restaumatic</option>
+                            <option value="Uber Eats">Uber Eats</option>
+                            <option value="Bolt Food">Bolt Food</option>
+                            <option value="Glovo">Glovo</option>
+                            <option value="Wolt">Wolt</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:flex-end;">
+                        <button class="btn btn-success" style="width:100%;" onclick="simulatePOSOrder()">⚡ Rozchoduj ze Stanu</button>
+                    </div>
+                </div>
+            </div>
+            <div id="pos-result" style="margin-top:15px;"></div>
+        </div>
+    </div>
+
+    <!-- MODALE EDYCYJNE -->
+    <div class="modal-overlay" id="edit-dish-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Edytuj Danie w Menu</h3>
+                <span class="modal-close" onclick="closeModal('edit-dish-modal')">&times;</span>
+            </div>
+            <form onsubmit="saveEditDish(event)">
+                <input type="hidden" id="edit-dish-id">
+                <div class="form-group">
+                    <label>Nazwa Dania</label>
+                    <input type="text" id="edit-dish-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Cena Brutto (zł)</label>
+                    <input type="number" id="edit-dish-price" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>ID Integracji POS</label>
+                    <input type="text" id="edit-dish-pos-id">
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">💾 Zapisz Zmiany</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="edit-mat-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Edytuj Pozycję Magazynową</h3>
+                <span class="modal-close" onclick="closeModal('edit-mat-modal')">&times;</span>
+            </div>
+            <form onsubmit="saveEditMaterial(event)">
+                <input type="hidden" id="edit-mat-id">
+                <div class="form-group">
+                    <label>Kategoria</label>
+                    <select id="edit-mat-category" style="font-weight: 700;">
+                        <option value="jedzenie">🥦 Jedzenie</option>
+                        <option value="opakowania">📦 Opakowania</option>
+                        <option value="chemia">🧼 Chemia</option>
+                        <option value="prad">⚡ Prąd</option>
+                        <option value="czynsz">🏢 Czynsz</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kod SKU</label>
+                    <input type="text" id="edit-mat-sku" required>
+                </div>
+                <div class="form-group">
+                    <label>Nazwa Pozycji</label>
+                    <input type="text" id="edit-mat-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Jednostka Miary</label>
+                    <select id="edit-mat-unit">
+                        <option value="g">Gram (g)</option>
+                        <option value="ml">Mililitr (ml)</option>
+                        <option value="szt">Sztuka (szt)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cena Netto za J.M. (zł)</label>
+                    <input type="number" id="edit-mat-price" step="0.0001" required>
+                </div>
+                <div class="form-group">
+                    <label>Uzysk %</label>
+                    <input type="number" id="edit-mat-yield" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label>Stan Magazynowy</label>
+                    <input type="number" id="edit-mat-stock" step="1" required>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">💾 Zapisz Zmiany</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // BEZPOŚREDNIE WSKAZANIE ADRESU LOCALHOST
+        const API = (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null')
+            ? 'http://127.0.0.1:8000'
+            : window.location.origin;
+
+        let currentRecipeItems = [];
+        let rawMaterialsCache = [];
+        let menuItemsCache = [];
+        let currentCategoryFilter = 'all';
+
+        function switchTab(tabId, evt) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(evt) evt.target.classList.add('active');
+            refreshAllData();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        async function refreshAllData() {
+            loadKsefConfig();
+            loadKsefData();
+            loadFoodCost();
+            loadMaterials();
+            loadMenuSelect();
+        }
+
+        function setCategoryFilter(category, evt) {
+            currentCategoryFilter = category;
+            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+            if(evt) evt.target.classList.add('active');
+            renderMaterialsTable();
+        }
+
+        function getCategoryBadge(cat) {
+            if(cat === 'opakowania') return '<span class="badge-cat cat-opakowania">📦 Opakowania</span>';
+            if(cat === 'chemia') return '<span class="badge-cat cat-chemia">🧼 Chemia</span>';
+            if(cat === 'prad') return '<span class="badge-cat cat-prad">⚡ Prąd</span>';
+            if(cat === 'czynsz') return '<span class="badge-cat cat-czynsz">🏢 Czynsz</span>';
+            return '<span class="badge-cat cat-jedzenie">🥦 Jedzenie</span>';
+        }
+
+        function renderSimulatorTable() {
+            const targetFc = parseFloat(document.getElementById('target-fc-input').value) || 25;
+            document.getElementById('target-fc-label').innerText = targetFc;
+
+            const simTable = document.getElementById('simulator-table');
+            if (!menuItemsCache || menuItemsCache.length === 0) {
+                simTable.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">Brak wyliczeń. Dodaj najpierw dania do menu!</td></tr>';
+                return;
+            }
+
+            simTable.innerHTML = menuItemsCache.map(i => {
+                const cost = Number(i.production_cost_net);
+                const vat = Number(i.vat_rate) || 8.0;
+                
+                let suggestedGross = "0.00";
+                if (cost > 0 && targetFc > 0) {
+                    const targetNet = cost / (targetFc / 100.0);
+                    suggestedGross = (targetNet * (1 + vat / 100.0)).toFixed(2);
+                }
+
+                return `
+                    <tr>
+                        <td><strong>${i.dish_name}</strong></td>
+                        <td>${cost.toFixed(2)} zł</td>
+                        <td>${i.price_gross} zł</td>
+                        <td><strong>${i.food_cost_percentage}%</strong></td>
+                        <td><strong style="color:#16a34a; font-size:16px;">${suggestedGross} zł</strong></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- OBSŁUGA ŁADOWANIA FOOD COST Z POPRAWKĄ NA BŁĘDY ---
+
+        async function loadFoodCost() {
+            const table = document.getElementById('foodcost-table');
+            try {
+                const res = await fetch(`${API}/food-cost`);
+                if(!res.ok) throw new Error("Błąd serwera API");
+                const data = await res.json();
+                menuItemsCache = data.food_cost_analysis || [];
+
+                if (menuItemsCache.length === 0) {
+                    table.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">Brak dań w menu. Dodaj pierwsze danie po lewej stronie!</td></tr>';
+                    renderSimulatorTable();
+                    return;
+                }
+
+                table.innerHTML = menuItemsCache.map(i => {
+                    const fc = Number(i.food_cost_percentage);
+                    let badgeClass = fc > 32 ? 'fc-red' : (fc > 25 ? 'fc-yellow' : 'fc-green');
+
+                    return `
+                        <tr>
+                            <td><strong>${i.dish_name}</strong></td>
+                            <td>${i.price_gross} zł</td>
+                            <td>${Number(i.production_cost_net).toFixed(2)} zł</td>
+                            <td><span class="badge-fc ${badgeClass}">${fc}%</span></td>
+                            <td>
+                                <button class="btn btn-warning" onclick="openEditDishModal(${i.id})">✏️ Edytuj</button>
+                                <button class="btn btn-danger" onclick="deleteDish(${i.id})">🗑️ Usuń</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                renderSimulatorTable();
+
+                document.getElementById('api-status').style.background = '#22c55e';
+                document.getElementById('api-status').innerText = '● Połączono z API';
+            } catch (e) {
+                table.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#dc2626; font-weight:600;">❌ Brak połączenia z serwerem API! Uruchom program plikiem Uruchom_Gastro.bat</td></tr>';
+                document.getElementById('api-status').style.background = '#ef4444';
+                document.getElementById('api-status').innerText = '● Brak połączenia z API';
+            }
+        }
+
+        async function addMenuItem(e) {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('dish-name').value,
+                price_gross: parseFloat(document.getElementById('dish-price').value),
+                external_pos_id: document.getElementById('dish-pos-id').value
+            };
+
+            const res = await fetch(`${API}/menu-items`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if(res.ok) {
+                alert('✅ Danie pomyślnie dodane do menu!');
+                document.getElementById('dish-name').value = '';
+                document.getElementById('dish-price').value = '';
+                document.getElementById('dish-pos-id').value = '';
+                refreshAllData();
+            }
+        }
+
+        function openEditDishModal(id) {
+            const dish = menuItemsCache.find(d => d.id === id);
+            if (!dish) return;
+
+            document.getElementById('edit-dish-id').value = dish.id;
+            document.getElementById('edit-dish-name').value = dish.dish_name;
+            document.getElementById('edit-dish-price').value = dish.price_gross;
+            document.getElementById('edit-dish-pos-id').value = dish.external_pos_id || '';
+            document.getElementById('edit-dish-modal').classList.add('active');
+        }
+
+        async function saveEditDish(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-dish-id').value;
+            const payload = {
+                name: document.getElementById('edit-dish-name').value,
+                price_gross: parseFloat(document.getElementById('edit-dish-price').value),
+                external_pos_id: document.getElementById('edit-dish-pos-id').value
+            };
+
+            const res = await fetch(`${API}/menu-items/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if(res.ok) {
+                closeModal('edit-dish-modal');
+                alert('✅ Zmiany w daniu zostały zapisane!');
+                refreshAllData();
+            }
+        }
+
+        async function deleteDish(id) {
+            if(!confirm('Czy na pewno chcesz usunąć to danie z menu?')) return;
+
+            const res = await fetch(`${API}/menu-items/${id}`, { method: 'DELETE' });
+            if(res.ok) {
+                alert('🗑️ Danie zostało usunięte!');
+                refreshAllData();
+            }
+        }
+
+        // --- MAGAZYN & SUROWCE ---
+
+        async function loadMaterials() {
+            const table = document.getElementById('materials-table');
+            try {
+                const res = await fetch(`${API}/raw-materials`);
+                if(!res.ok) throw new Error("Błąd sieci");
+                const data = await res.json();
+                rawMaterialsCache = data.raw_materials || [];
+                renderMaterialsTable();
+            } catch (e) {
+                table.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626; font-weight:600;">❌ Brak połączenia z serwerem API! Uruchom Uruchom_Gastro.bat.</td></tr>';
+            }
+        }
+
+        function renderMaterialsTable() {
+            const table = document.getElementById('materials-table');
+            const filtered = currentCategoryFilter === 'all' 
+                ? rawMaterialsCache 
+                : rawMaterialsCache.filter(m => (m.category || 'jedzenie') === currentCategoryFilter);
+
+            if (filtered.length === 0) {
+                table.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b;">Brak pozycji w tej kategorii. Dodaj pierwszą po lewej stronie lub pobierz z KSeF.</td></tr>';
+            } else {
+                table.innerHTML = filtered.map(m => {
+                    const price = Number(m.avg_purchase_price_net || 0).toFixed(4);
+                    const yieldVal = m.yield_percentage || 100;
+                    const stock = Number(m.current_stock || 0);
+
+                    return `
+                        <tr>
+                            <td>${getCategoryBadge(m.category)}</td>
+                            <td><strong>${m.name}</strong><br><small style="color:#64748b;">SKU: ${m.sku}</small></td>
+                            <td>${price} zł / ${m.unit}</td>
+                            <td><strong>${yieldVal}%</strong></td>
+                            <td>${stock} ${m.unit}</td>
+                            <td>
+                                <button class="btn btn-warning" onclick="openEditMaterialModal(${m.id})">✏️ Edytuj</button>
+                                <button class="btn btn-danger" onclick="deleteMaterial(${m.id})">🗑️ Usuń</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            const selectElem = document.getElementById('add-ingredient-mat');
+            if (selectElem) {
+                const foodMaterials = rawMaterialsCache.filter(m => (m.category || 'jedzenie') === 'jedzenie');
+                selectElem.innerHTML = foodMaterials.map(m => `
+                    <option value="${m.id}" data-unit="${m.unit}" data-price="${m.avg_purchase_price_net}" data-yield="${m.yield_percentage || 100}" data-name="${m.name}">
+                        ${m.name} (Uzysk: ${m.yield_percentage || 100}%)
+                    </option>
+                `).join('');
+            }
+        }
+
+        async function addRawMaterial(e) {
+            e.preventDefault();
+            const payload = {
+                category: document.getElementById('mat-category').value,
+                sku: document.getElementById('mat-sku').value,
+                name: document.getElementById('mat-name').value,
+                unit: document.getElementById('mat-unit').value,
+                avg_purchase_price_net: parseFloat(document.getElementById('mat-price').value),
+                yield_percentage: parseFloat(document.getElementById('mat-yield').value),
+                current_stock: parseFloat(document.getElementById('mat-stock').value)
+            };
+
+            const res = await fetch(`${API}/raw-materials`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if(res.ok) {
+                alert('✅ Pozycja dodana!');
+                document.getElementById('mat-sku').value = '';
+                document.getElementById('mat-name').value = '';
+                document.getElementById('mat-price').value = '';
+                document.getElementById('mat-stock').value = '';
+                refreshAllData();
+            }
+        }
+
+        function openEditMaterialModal(id) {
+            const mat = rawMaterialsCache.find(m => m.id === id);
+            if (!mat) return;
+
+            document.getElementById('edit-mat-id').value = mat.id;
+            document.getElementById('edit-mat-category').value = mat.category || 'jedzenie';
+            document.getElementById('edit-mat-sku').value = mat.sku;
+            document.getElementById('edit-mat-name').value = mat.name;
+            document.getElementById('edit-mat-unit').value = mat.unit;
+            document.getElementById('edit-mat-price').value = mat.avg_purchase_price_net;
+            document.getElementById('edit-mat-yield').value = mat.yield_percentage || 100;
+            document.getElementById('edit-mat-stock').value = mat.current_stock;
+            document.getElementById('edit-mat-modal').classList.add('active');
+        }
+
+        async function saveEditMaterial(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-mat-id').value;
+            const payload = {
+                category: document.getElementById('edit-mat-category').value,
+                sku: document.getElementById('edit-mat-sku').value,
+                name: document.getElementById('edit-mat-name').value,
+                unit: document.getElementById('edit-mat-unit').value,
+                avg_purchase_price_net: parseFloat(document.getElementById('edit-mat-price').value),
+                yield_percentage: parseFloat(document.getElementById('edit-mat-yield').value),
+                current_stock: parseFloat(document.getElementById('edit-mat-stock').value)
+            };
+
+            const res = await fetch(`${API}/raw-materials/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if(res.ok) {
+                closeModal('edit-mat-modal');
+                alert('✅ Pozycja zaktualizowana!');
+                refreshAllData();
+            }
+        }
+
+        async function deleteMaterial(id) {
+            if(!confirm('Czy na pewno chcesz usunąć tę pozycję z magazynu?')) return;
+
+            const res = await fetch(`${API}/raw-materials/${id}`, { method: 'DELETE' });
+            if(res.ok) {
+                alert('🗑️ Pozycja została usunięta!');
+                refreshAllData();
+            }
+        }
+
+        // --- RECEPTURY & UDZIAŁ W FOOD COST ---
+
+        async function loadMenuSelect() {
+            try {
+                const res = await fetch(`${API}/menu-items`);
+                const data = await res.json();
+                const items = data.menu_items || [];
+
+                const options = '<option value="">-- Wybierz Danie --</option>' + 
+                    items.map(i => `<option value="${i.id}">${i.name} (${i.price_gross} zł)</option>`).join('');
+
+                document.getElementById('recipe-dish-select').innerHTML = options;
+                document.getElementById('pos-dish-select').innerHTML = options;
+            } catch (e) {}
+        }
+
+        async function loadRecipeForDish() {
+            const dishId = document.getElementById('recipe-dish-select').value;
+            if (!dishId) return;
+
+            const res = await fetch(`${API}/recipes/${dishId}`);
+            const data = await res.json();
+            
+            const totalCost = data.total_production_cost_net || 0.0;
+            document.getElementById('recipe-summary-box').style.display = 'block';
+            document.getElementById('total-dish-cost-val').innerText = `${totalCost.toFixed(2)} zł`;
+
+            currentRecipeItems = (data.ingredients || []).map(i => ({
+                raw_material_id: i.raw_material_id,
+                material_name: i.material_name,
+                quantity_required: parseFloat(i.quantity_required),
+                yield_percentage: parseFloat(i.yield_percentage) || 100.0,
+                cost_net: parseFloat(i.cost_net),
+                fc_share_percentage: parseFloat(i.fc_share_percentage) || 0.0,
+                unit_price_net: parseFloat(i.avg_purchase_price_net)
+            }));
+
+            renderRecipeTable();
+        }
+
+        function calculateRecipeShares() {
+            let totalCost = 0.0;
+            currentRecipeItems.forEach(item => {
+                const yieldPct = item.yield_percentage > 0 ? item.yield_percentage : 100.0;
+                const effectivePrice = item.unit_price_net / (yieldPct / 100.0);
+                item.cost_net = item.quantity_required * effectivePrice;
+                totalCost += item.cost_net;
+            });
+
+            document.getElementById('recipe-summary-box').style.display = 'block';
+            document.getElementById('total-dish-cost-val').innerText = `${totalCost.toFixed(2)} zł`;
+
+            currentRecipeItems.forEach(item => {
+                item.fc_share_percentage = totalCost > 0 ? ((item.cost_net / totalCost) * 100).toFixed(2) : "0.00";
+            });
+        }
+
+        function renderRecipeTable() {
+            calculateRecipeShares();
+            const tbody = document.getElementById('recipe-ingredients-table');
+            if (currentRecipeItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6">Brak składników w recepturze. Dodaj pierwszy poniżej!</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = currentRecipeItems.map((item, idx) => `
+                <tr>
+                    <td><strong>${item.material_name}</strong></td>
+                    <td>${item.quantity_required}</td>
+                    <td>${item.yield_percentage}%</td>
+                    <td>${Number(item.cost_net).toFixed(2)} zł</td>
+                    <td><strong style="color:#2563eb; font-size:15px;">${item.fc_share_percentage}%</strong></td>
+                    <td><button class="btn btn-danger" onclick="removeIngredientFromList(${idx})">🗑️ Usuń</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function addIngredientToTable() {
+            const select = document.getElementById('add-ingredient-mat');
+            const selectedOpt = select.options[select.selectedIndex];
+            if(!selectedOpt) return;
+
+            const matId = parseInt(selectedOpt.value);
+            const matName = selectedOpt.getAttribute('data-name');
+            const price = parseFloat(selectedOpt.getAttribute('data-price'));
+            const yieldPct = parseFloat(selectedOpt.getAttribute('data-yield')) || 100.0;
+            const qty = parseFloat(document.getElementById('add-ingredient-qty').value);
+
+            if (!qty || qty <= 0) {
+                alert('Podaj poprawną ilość składnika!');
+                return;
+            }
+
+            currentRecipeItems.push({
+                raw_material_id: matId,
+                material_name: matName,
+                quantity_required: qty,
+                yield_percentage: yieldPct,
+                unit_price_net: price,
+                cost_net: 0,
+                fc_share_percentage: 0
+            });
+
+            renderRecipeTable();
+            document.getElementById('add-ingredient-qty').value = '';
+        }
+
+        function removeIngredientFromList(idx) {
+            currentRecipeItems.splice(idx, 1);
+            renderRecipeTable();
+        }
+
+        async function saveRecipe() {
+            const dishId = document.getElementById('recipe-dish-select').value;
+            if (!dishId) {
+                alert('Wybierz najpierw danie z listy!');
+                return;
+            }
+
+            const payload = {
+                menu_item_id: parseInt(dishId),
+                ingredients: currentRecipeItems.map(i => ({
+                    raw_material_id: i.raw_material_id,
+                    quantity_required: i.quantity_required
+                }))
+            };
+
+            const res = await fetch(`${API}/recipes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if(res.ok) {
+                alert('✅ Receptura została zapisana!');
+                refreshAllData();
+            }
+        }
+
+        // --- KSEF & INTEGRACJE ---
+
+        async function loadKsefConfig() {
+            try {
+                const res = await fetch(`${API}/ksef/config`);
+                const data = await res.json();
+                if(data.config) {
+                    document.getElementById('ksef-nip-config').value = data.config.nip || '';
+                    if(data.config.token) {
+                        document.getElementById('ksef-token-config').value = data.config.token;
+                    }
+                }
+            } catch(e) {}
+        }
+
+        async function saveKsefConfig(e) {
+            e.preventDefault();
+            const nip = document.getElementById('ksef-nip-config').value;
+            const token = document.getElementById('ksef-token-config').value;
+            const msgDiv = document.getElementById('ksef-config-msg');
+
+            const res = await fetch(`${API}/ksef/config`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nip, token, environment: "PROD" })
+            });
+
+            if(res.ok) {
+                msgDiv.innerHTML = '<div style="background:#dcfce7; padding:10px; border-radius:6px; color:#15803d; font-weight:600;">✅ Zapamiętano NIP oraz Token KSeF w bazie danych!</div>';
+            }
+        }
+
+        async function syncKsefAuto() {
+            const statusDiv = document.getElementById('ksef-sync-status');
+            statusDiv.innerHTML = '<p style="color:#7c3aed; font-weight:600;">Pobieranie e-faktur z podziałem na 5 kategorii...</p>';
+
+            try {
+                const res = await fetch(`${API}/ksef/fetch-auto`, { method: 'POST' });
+                const data = await res.json();
+                if(res.ok) {
+                    statusDiv.innerHTML = `<div style="background:#dcfce7; padding:12px; border-radius:6px; color:#15803d; font-weight:600;">✅ Pobrano nową e-fakturę [${data.invoice_processed}] z KSeF!</div>`;
+                    refreshAllData();
+                } else {
+                    statusDiv.innerHTML = `<div style="background:#fee2e2; padding:12px; border-radius:6px; color:#991b1b; font-weight:600;">❌ ${data.detail || 'Błąd połączenia'}</div>`;
+                }
+            } catch(e) {
+                statusDiv.innerHTML = '<p style="color:#dc2626;">Błąd połączenia z serwerem.</p>';
+            }
+        }
+
+        async function loadKsefData() {
+            try {
+                const res = await fetch(`${API}/alerts`);
+                const data = await res.json();
+                const alerts = data.alerts || [];
+
+                if (alerts.length === 0) {
+                    document.getElementById('alerts-container').innerHTML = '<p style="color:#16a34a; font-weight:600;">Brak aktywnych podwyżek. Ceny z KSeF są stabilne.</p>';
+                } else {
+                    document.getElementById('alerts-container').innerHTML = alerts.map(a => `
+                        <div class="alert-box">
+                            <div>
+                                <strong style="color:#991b1b;">🚨 Wzrost ceny w KSeF: ${a.material_name}</strong><br>
+                                Stara cena: <strong>${a.old_price} zł</strong> → Nowa cena: <strong>${a.new_price} zł</strong><br>
+                                Skok ceny o: <span style="color:#dc2626; font-weight:700;">+${a.percentage_increase}%</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) {}
+
+            try {
+                const resInv = await fetch(`${API}/ksef/invoices`);
+                const dataInv = await resInv.json();
+                const invs = dataInv.invoices || [];
+
+                document.getElementById('ksef-invoices-table').innerHTML = invs.length === 0 ? 
+                    '<tr><td colspan="4" style="color:#64748b; text-align:center;">Brak pobranych faktur. Kliknij "Pobierz Nowe Faktury z KSeF" powyżej!</td></tr>' :
+                    invs.map(i => `
+                        <tr>
+                            <td><strong>${i.invoice_number}</strong></td>
+                            <td>${i.supplier_nip}</td>
+                            <td>${i.total_gross} zł</td>
+                            <td><span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:10px; font-weight:600; font-size:12px;">${i.status}</span></td>
+                        </tr>
+                    `).join('');
+            } catch(e) {}
+        }
+
+        async function simulatePOSOrder() {
+            const dishId = document.getElementById('pos-dish-select').value;
+            const qty = parseFloat(document.getElementById('pos-qty').value);
+            const source = document.getElementById('pos-source').value;
+
+            if (!dishId) {
+                alert('Najpierw wybierz danie z listy!');
+                return;
+            }
+
+            const res = await fetch(`${API}/integrations/process-sale`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    menu_item_id: parseInt(dishId),
+                    quantity_sold: qty,
+                    source_platform: source
+                })
+            });
+
+            const data = await res.json();
+            if(res.ok) {
+                document.getElementById('pos-result').innerHTML = `
+                    <div style="background:#dcfce7; padding:15px; border-radius:8px; color:#15803d; font-weight:600;">
+                        ✅ ${data.message}
+                    </div>
+                `;
+                refreshAllData();
+            }
+        }
+
+        refreshAllData();
+    </script>
+</body>
+</html>
